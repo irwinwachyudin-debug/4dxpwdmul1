@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Saldo Siap Lapor</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1d6fd8"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f6f7f9;--fg:#1c2330;--card:#fff;--mut:#667085;--line:#dfe3ea;--acc:#1d6fd8;--accfg:#fff;--bad:#c62828;--soft:#eaf2fd;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141b;--fg:#e8ecf3;--card:#1a212c;--mut:#9aa5b6;--line:#2c3544;--acc:#5aa2ff;--accfg:#0b1320;--bad:#ff8a80;--soft:#1c2a40}}
+:root[data-theme="dark"]{--bg:#10141b;--fg:#e8ecf3;--card:#1a212c;--mut:#9aa5b6;--line:#2c3544;--acc:#5aa2ff;--accfg:#0b1320;--bad:#ff8a80;--soft:#1c2a40}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:14px}
+h1{font-size:19px;margin:4px 0 12px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h2{font-size:14px;margin:0 0 8px}
+textarea,input,select{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px}
+textarea{resize:vertical}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:9px 12px;margin-top:8px}
+button.pri{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:600}
+.hint{color:var(--mut);font-size:13px;margin:6px 0}
+.cell{background:var(--soft);border-radius:8px;padding:8px;margin:8px 0;font-size:14px}
+.err,.warn{color:var(--bad);font-size:13px;margin:6px 0}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:right;color:var(--mut);font-weight:500;padding:4px}th:first-child{text-align:left}
+td{padding:4px;border-top:1px solid var(--line);text-align:right;vertical-align:middle}
+td:first-child{text-align:left}
+td input{padding:5px;text-align:right;width:74px;font-size:13px}
+td.siap{font-weight:700;font-size:16px}
+small{color:var(--mut);display:block;font-weight:400}
+input.bad{border-color:var(--bad)}
+.st{color:var(--mut);font-size:12px;text-align:center}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1;margin:0}
+button.on{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{margin:0;padding:5px 9px;font-size:13px}
+svg{width:100%;height:auto;display:block}.lg{font-size:12px;color:var(--mut);margin:4px 0 10px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}summary{font-size:14px}
+.dd td,.dd th{white-space:nowrap}.dd td:first-child,.dd th:first-child{position:sticky;left:0;background:var(--card)}
+.card{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}.card small{margin-top:3px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--acc)}
+.ok{color:#2e9e57}.no{color:var(--bad)}
+</style></head><body><main>
+<h1>Saldo Siap Lapor</h1>
+<div class="tabs"><button id="t1" class="on">Laporan</button><button id="t2">Dashboard</button></div>
+<div id="p1">
+<section>
+<h2>Tempel pesan laporan team leader</h2>
+<textarea id="msg" rows="6" placeholder="Tempel pesan laporan di sini"></textarea>
+<button id="baca" class="pri">Baca laporan</button>
+<p id="err" class="err"></p>
+</section>
+<section id="hasil" hidden>
+<select id="tgl" aria-label="Tanggal laporan"></select>
+<div class="cell" id="cell"></div>
+<button id="salin" class="pri">Salin realisasi</button>
+<div class="wrap"><table id="tb"></table></div>
+<p id="warn" class="warn"></p>
+<button id="reset">Hitung ulang saldo awal otomatis</button>
+</section>
+<section id="lap" hidden>
+<h2>Angka yang Anda laporkan</h2>
+<p class="hint">Catat agar saldo awal besok terhitung.</p>
+<div class="wrap"><table id="tl"></table></div>
+</section>
+<section id="kum" hidden></section>
+</div>
+<div id="p2" hidden><section id="dbody"></section></div>
+<details><summary>Cadangan dan pulihkan data</summary>
+<p class="hint">Cadangkan berkala. Memulihkan akan menimpa semua data saat ini.</p>
+<button id="bk">Cadangkan data</button>
+<p class="hint">Pilih file cadangan (.json):</p><input type="file" id="rf" accept=".json,application/json,text/plain">
+<p class="hint">Atau tempel isinya:</p>
+<textarea id="rt" rows="3" placeholder="Tempel data cadangan di sini" style="margin-top:8px"></textarea>
+<button id="rs">Pulihkan dari cadangan</button>
+<p class="hint" id="bs"></p></details>
+<p class="st" id="st"></p>
+</main>
+<script>
+const NM=['P2TL','Ganti meter','Gangguan Permanen','Gangguan Temporer','Penambahan Pelanggan','Delta Daya','Lisdes'];
+const KY=['P2TL','Penggantian','Permanen','Temporer','Jumlah Pelanggan','Daya Tersambung',null];
+const UN=['kWh','Plg','kali','kali','Plg','kVA',''];
+const BL=['jan','feb','mar','apr','mei','jun','jul','agu','sep','okt','nov','des'];
+let S={days:{},ov:{}},cur=null,dirty=false,tm=null,ref=null,mode='browser';
+const $=i=>document.getElementById(i);
+function num(s){s=String(s).trim();const ng=s[0]==='-';s=s.replace(/^-/,'');if(!/^[\d.,]+$/.test(s))return null;
+let v;if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s))v=parseFloat(s.replace(/\./g,'').replace(',','.'));else v=parseFloat(s.replace(',','.'));
+return isNaN(v)?null:(ng?-v:v)}
+const fmt=n=>n==null?'':(Math.round(n*100)/100).toLocaleString('id-ID',{maximumFractionDigits:2});
+const raw=n=>String(Math.round((n||0)*100)/100).replace('.',',');
+function addD(d,n){const t=new Date(Date.UTC(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8))+n*864e5);return t.toISOString().slice(0,10)}
+function colL(n){let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s}
+function parse(t){const m=t.match(/tanggal\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/i);if(!m)return null;
+const mi=BL.indexOf(m[2].toLowerCase().slice(0,3));if(mi<0||+m[1]>31)return null;
+const date=m[3]+'-'+String(mi+1).padStart(2,'0')+'-'+m[1].padStart(2,'0');
+const lo=t.toLowerCase();
+const grab=(k,lab)=>{if(!k)return 0;const i=lo.indexOf(k.toLowerCase());if(i<0)return null;const x=t.slice(i).match(new RegExp(lab+'\\s*:\\s*([\\d.,]+)','i'));return x?num(x[1]):null};
+return{date,r:KY.map(k=>grab(k,'Realisasi')),t:KY.map(k=>grab(k,'Target'))}}
+function earliest(){const k=Object.keys(S.days).concat(Object.keys(S.ov)).sort();return k[0]}
+function awalOf(d){if(S.ov[d])return S.ov[d].slice();if(!earliest()||d<=earliest())return Array(7).fill(0);
+const p=addD(d,-1),pr=S.days[p],pa=awalOf(p);
+return pa.map((x,i)=>x+((pr&&pr.r[i])||0)-((pr&&pr.l&&pr.l[i])||0))}
+function siapOf(d){const a=awalOf(d),r=S.days[d].r;return a.map((x,i)=>x+(r[i]||0))}
+function save(){dirty=true;clearTimeout(tm);tm=setTimeout(persist,500)}
+async function persist(){const json=JSON.stringify(S);
+try{if(ref){await ref.set({json});$('st').textContent='Tersimpan di akun Anda'}else{localStorage.setItem('slr',json);$('st').textContent='Tersimpan di browser ini'}}
+catch(e){$('st').textContent='Gagal menyimpan'}}
+function render(){const ds=Object.keys(S.days).sort().reverse();
+$('hasil').hidden=$('lap').hidden=!ds.length;if(!ds.length)return;
+if(!cur||!S.days[cur])cur=ds[0];
+$('tgl').innerHTML=ds.map(d=>'<option value="'+d+'"'+(d===cur?' selected':'')+'>'+d.slice(8)+' '+BL[+d.slice(5,7)-1]+' '+d.slice(0,4)+'</option>').join('');
+const D=S.days[cur],a=awalOf(cur),s=siapOf(cur),dn=+cur.slice(8);
+$('cell').innerHTML='Tempel ke sel <b>'+colL(3+dn)+'9</b> (baris pertama Realisasi Harian, kolom tanggal '+dn+').';
+let h='<tr><th>Indikator</th><th>Awal</th><th>Real</th><th>Siap lapor</th></tr>';
+NM.forEach((n,i)=>{h+='<tr><td>'+n+(i<6?'<small>Target <input data-k="t" data-i="'+i+'" inputmode="decimal" value="'+fmt(D.t[i])+'"'+(D.t[i]==null?' class="bad"':'')+'> '+UN[i]+'</small>':'')+'</td>'+
+'<td><input data-k="a" data-i="'+i+'" inputmode="decimal" value="'+fmt(a[i])+'"></td>'+
+'<td><input data-k="r" data-i="'+i+'" inputmode="decimal" value="'+fmt(D.r[i])+'"'+(D.r[i]==null?' class="bad"':'')+'></td>'+
+'<td class="siap">'+fmt(s[i])+'</td></tr>'});
+$('tb').innerHTML=h;
+let l='<tr><th>Indikator</th><th>Dilaporkan</th><th>Awal besok</th></tr>';
+NM.forEach((n,i)=>{const v=D.l?D.l[i]:null;l+='<tr><td>'+n+'</td><td><input data-k="l" data-i="'+i+'" inputmode="decimal" value="'+(v==null?'':fmt(v))+'"></td><td>'+fmt(s[i]-(v||0))+'</td></tr>'});
+$('tl').innerHTML=l;
+const w=[],p=addD(cur,-1);
+if(D.r.some(x=>x==null))w.push('Ada angka yang tidak terbaca (kotak merah). Isi manual.');
+if(earliest()&&cur>earliest()){if(!S.days[p])w.push('Data tanggal sebelumnya belum ada, dianggap 0.');else if(!S.days[p].l)w.push('Pelaporan tanggal sebelumnya belum dicatat, dianggap 0.')}
+$('warn').textContent=w.join(' ')}
+$('baca').onclick=()=>{const t=$('msg').value,r=parse(t);
+if(!r){$('err').textContent='Tanggal tidak terbaca. Pastikan pesan memuat kalimat "tanggal 02 Oktober 2026".';return}
+$('err').textContent='';const old=S.days[r.date];S.days[r.date]={r:r.r,t:r.t,l:old?old.l:null};cur=r.date;$('msg').value='';render();save()};
+$('tgl').onchange=e=>{cur=e.target.value;render()};
+$('reset').onclick=()=>{delete S.ov[cur];render();save()};
+$('salin').onclick=async()=>{const txt=S.days[cur].r.map(raw).join('\n');
+try{await navigator.clipboard.writeText(txt)}catch(e){const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(_){}t.remove()}
+$('salin').textContent='Tersalin. Tempel di '+colL(3+(+cur.slice(8)))+'9';setTimeout(()=>$('salin').textContent='Salin realisasi',2500)};
+document.addEventListener('change',e=>{const el=e.target,k=el.dataset&&el.dataset.k;if(!k)return;const i=+el.dataset.i,D=S.days[cur],v=el.value.trim()===''?null:num(el.value);
+if(k==='r'){D.r[i]=v}else if(k==='t'){D.t[i]=v}else if(k==='l'){if(!D.l)D.l=Array(7).fill(null);D.l[i]=v}else if(k==='a'){const a=awalOf(cur);a[i]=v||0;S.ov[cur]=a}
+render();save()});
+try{const x=localStorage.getItem('slr');if(x){S=JSON.parse(x);render()}}catch(e){}
+(async()=>{try{if(!(window.claude&&claude.use))return;const db=await claude.use('db'),us=await claude.use('user');if(!db||!us)return;
+const id=await us.id();if(!id)return;ref=db.collection('data/users/'+id).doc('ledger');mode='akun';
+const sn=await ref.get();if(sn.exists&&!dirty){const j=sn.data().json;if(j){S=JSON.parse(j);render()}}
+$('st').textContent='Tersimpan di akun Anda'}catch(e){}})();
+let tab=1,ind=0,bln=null;
+function setTab(n){tab=n;$('p1').hidden=n!==1;$('p2').hidden=n!==2;$('t1').classList.toggle('on',n===1);$('t2').classList.toggle('on',n===2);if(n===2)dash()}
+$('t1').onclick=()=>setTab(1);$('t2').onclick=()=>setTab(2);
+let per='b',yr=null,km='r';
+function agg(pre){const a=NM.map(()=>({r:0,t:0,l:0,hl:false}));let n=0;
+for(const k in S.days){if(k.indexOf(pre)!==0)continue;const D=S.days[k];n++;NM.forEach((_,i)=>{a[i].r+=D.r[i]||0;a[i].t+=D.t[i]||0;if(D.l&&D.l[i]!=null){a[i].l+=D.l[i];a[i].hl=true}})}
+return{a,n}}
+function dash(){
+const ds=Object.keys(S.days);
+if(!ds.length){$('dbody').innerHTML='<p class="hint">Belum ada data. Tempel laporan dulu.</p>';return}
+const ms=[...new Set(ds.map(d=>d.slice(0,7)))].sort().reverse(),ys=[...new Set(ds.map(d=>d.slice(0,4)))].sort().reverse();
+if(!bln||!ms.includes(bln))bln=ms[0];if(!yr||!ys.includes(yr))yr=ys[0];
+const mo=per==='b',pre=mo?bln:yr,nb=mo?new Date(+bln.slice(0,4),+bln.slice(5),0).getDate():12,low=[2,3].includes(ind);
+const rows=[],dr=[],cr=[],cl=[];let kr=0,kt=0,kl=0,hasL=false;
+for(let k=1;k<=nb;k++){const {a,n}=agg(pre+'-'+String(k).padStart(2,'0')),x=a[ind];kr+=x.r;kt+=x.t;kl+=x.l;if(x.hl)hasL=true;
+rows.push({k,has:n>0,t:x.t,r:x.r,l:x.hl?x.l:null,kr,kt});dr.push(x.r);cr.push(kr);cl.push(kl)}
+const W=360,H=190,pl=36,pr=8,pt=10,pb=22,mx=Math.max(1,...dr,...cr,...(hasL?cl:[0])),
+X=i=>pl+(i+.5)*(W-pl-pr)/nb,Yy=v=>pt+(H-pt-pb)*(1-v/mx),bw=(W-pl-pr)/nb*.7;
+let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Grafik realisasi">';
+s+='<line x1="'+pl+'" y1="'+Yy(0)+'" x2="'+(W-pr)+'" y2="'+Yy(0)+'" stroke="var(--line)"/>';
+s+='<text x="'+(pl-4)+'" y="'+(pt+8)+'" text-anchor="end" font-size="9" fill="var(--mut)">'+fmt(mx)+'</text>';
+dr.forEach((v,i)=>{s+='<rect x="'+(X(i)-bw/2)+'" y="'+Yy(v)+'" width="'+bw+'" height="'+(Yy(0)-Yy(v))+'" fill="var(--acc)" opacity=".45"/>'});
+const pts=a=>a.map((v,i)=>X(i)+','+Yy(v)).join(' ');
+s+='<polyline points="'+pts(cr)+'" fill="none" stroke="var(--acc)" stroke-width="2"/>';
+if(hasL)s+='<polyline points="'+pts(cl)+'" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"/>';
+for(let k=1;k<=nb;k+=mo?5:1)s+='<text x="'+X(k-1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="9" fill="var(--mut)">'+(mo?k:BL[k-1])+'</text>';
+s+='</svg>';
+const opt=(v,t,sl)=>'<option value="'+v+'"'+(sl?' selected':'')+'>'+t+'</option>';
+let o='<div class="chips"><button data-per="b" class="'+(mo?'on':'')+'">Per bulan</button><button data-per="t" class="'+(mo?'':'on')+'">Per tahun</button></div>';
+o+='<select id="bln">'+(mo?ms.map(m=>opt(m,BL[+m.slice(5)-1]+' '+m.slice(0,4),m===bln)):ys.map(y=>opt(y,y,y===yr))).join('')+'</select>';
+o+='<div class="chips">'+NM.map((n,i)=>'<button data-ind="'+i+'" class="'+(i===ind?'on':'')+'">'+n+'</button>').join('')+'</div>';
+o+='<h2>'+NM[ind]+' '+(UN[ind]?'('+UN[ind]+')':'')+'</h2>'+s+'<p class="lg">Batang: realisasi '+(mo?'harian':'bulanan')+'. Garis penuh: kumulatif realisasi.'+(hasL?' Garis putus: kumulatif dilaporkan.':'')+'</p>';
+const T=agg(pre),n=T.n,sum=T.a;
+o+='<h2>Rincian '+(mo?'harian':'bulanan')+'</h2><div class="wrap"><table class="dd"><tr><th>'+(mo?'Tgl':'Bulan')+'</th><th>Target</th><th>Real</th><th>Kum. real</th><th>Kum. target</th><th>Selisih</th><th>Dilapor</th></tr>';
+rows.filter(x=>x.has).forEach(x=>{const df=x.kr-x.kt,bad=low?df>0:df<0;
+o+='<tr><td>'+(mo?x.k:BL[x.k-1])+'</td><td>'+fmt(x.t)+'</td><td>'+fmt(x.r)+'</td><td>'+fmt(x.kr)+'</td><td>'+fmt(x.kt)+'</td><td class="'+(bad?'no':'ok')+'">'+(ind===6?'-':(df>0?'+':'')+fmt(df))+'</td><td>'+(x.l==null?'-':fmt(x.l))+'</td></tr>'});
+o+='</table></div><p class="lg">Selisih = kumulatif real dikurangi kumulatif target. Hijau berarti sesuai atau lebih baik dari target.</p>';
+o+='<h2>Ringkasan '+(mo?'bulan':'tahun')+' ini ('+n+' hari terlapor)</h2>';
+NM.forEach((nm,i)=>{const x=sum[i],lw=[2,3].includes(i),pc=i<6&&x.t>0?x.r/x.t*100:null;
+const ok=i===6?null:lw?x.r<=x.t:(pc==null?null:x.r>=x.t);
+const st=i===6?'':lw?(ok?'Aman':'Melebihi batas'):(pc==null?'Target 0':ok?'Tercapai':'Di bawah target');
+o+='<div class="card"><div style="display:flex;justify-content:space-between"><b>'+nm+'</b><span class="'+(ok===false?'no':'ok')+'">'+st+'</span></div>'+
+(pc!=null?'<div class="bar"><i style="width:'+Math.min(100,pc)+'%"></i></div>':'')+
+'<small>Real '+fmt(x.r)+(i<6?' dari target '+fmt(x.t):'')+(pc!=null?' ('+Math.round(pc)+'%)':'')+' '+UN[i]+'</small>'+
+'<small>Rata-rata '+fmt(n?x.r/n:0)+' per hari'+(x.hl?' · Dilaporkan '+fmt(x.l)+' (selisih '+(x.l-x.r>0?'+':'')+fmt(x.l-x.r)+')':'')+'</small></div>'});
+$('dbody').innerHTML=o}
+function kum(){const el=$('kum');if(!cur||!S.days[cur]){el.hidden=true;return}el.hidden=false;
+const m=cur.slice(0,7),y=cur.slice(0,4),L={r:'Realisasi',l:'Dilaporkan',t:'Target'};
+let h='<h2>Kumulatif sampai '+cur.slice(8)+' '+BL[+cur.slice(5,7)-1]+' '+y+'</h2><div class="chips">'+Object.keys(L).map(k=>'<button data-km="'+k+'" class="'+(k===km?'on':'')+'">'+L[k]+'</button>').join('')+'</div>';
+h+='<div class="wrap"><table><tr><th>Indikator</th><th>Hari</th><th>Bulan</th><th>Tahun</th></tr>';
+NM.forEach((n,i)=>{let b=0,t=0;for(const k in S.days){if(k>cur)continue;const v=S.days[k][km],x=v?v[i]||0:0;if(k.indexOf(y)===0)t+=x;if(k.indexOf(m)===0)b+=x}
+const dv=S.days[cur][km];h+='<tr><td>'+n+'</td><td>'+(dv&&dv[i]!=null?fmt(dv[i]):'-')+'</td><td>'+fmt(b)+'</td><td>'+fmt(t)+'</td></tr>'});
+el.innerHTML=h+'</table></div>'}
+document.addEventListener('click',e=>{const c=e.target.closest?e.target:null;if(!c)return;let b=c.closest('[data-ind]');if(b){ind=+b.dataset.ind;dash();return}b=c.closest('[data-per]');if(b){per=b.dataset.per;dash();return}b=c.closest('[data-km]');if(b){km=b.dataset.km;kum()}});
+document.addEventListener('change',e=>{if(e.target.id==='bln'){if(per==='b')bln=e.target.value;else yr=e.target.value;dash()}});
+const _r=render;render=function(){_r();kum();if(tab===2)dash()};
+$('bk').onclick=async()=>{const json=JSON.stringify(S);let ok=false;
+try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:'cadangan-laporan.json',data:json});ok=true;$('bs').textContent='Cadangan disimpan sebagai file.'}}catch(e){}
+if(!ok&&!window.claude){const u=URL.createObjectURL(new Blob([json],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='cadangan-laporan.json';document.body.appendChild(a);a.click();a.remove();ok=true;$('bs').textContent='Cadangan diunduh.'}
+if(!ok){try{await navigator.clipboard.writeText(json);$('bs').textContent='Data disalin. Tempel dan simpan di catatan atau chat Anda sendiri.'}catch(e){$('bs').textContent='Gagal mencadangkan.'}}};
+$('rf').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{$('rt').value=await f.text();restore()}catch(x){$('bs').textContent='File tidak bisa dibaca.'}e.target.value=''};
+$('rs').onclick=()=>{try{const o=JSON.parse($('rt').value);if(!o||!o.days)throw 0;S={days:o.days,ov:o.ov||{}};$('rt').value='';cur=null;render();save();$('bs').textContent='Data dipulihkan.'}catch(e){$('bs').textContent='Format cadangan tidak valid.'}};
+</script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});</script></body></html>
